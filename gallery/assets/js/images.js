@@ -93,8 +93,8 @@ function showImage(index) {
 }
 
 function randomizeAndPlaceImages() {
-    const owner = 'emlncvsr';
-    const repo = 'emlncvsr.github.io';
+    const owner = 'ungaul';
+    const repo = 'ungaul.github.io';
     const branch = 'main';
     const directoryPath = 'gallery/assets/img/' + htmlFilePath + '/min';
 
