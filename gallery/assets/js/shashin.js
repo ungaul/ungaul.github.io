@@ -1,7 +1,5 @@
 document.title = "Gallery | 写真";
-htmlFilePath = "shashin"
-
-$(document).ready(function () {
+htmlFilePath = "shashin"$(document).ready(function () {
   $("#name").text("写真");
   $("#username").text("geijutsushashin");
   $("#url").text("links").attr("data-url", "/links");

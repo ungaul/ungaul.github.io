@@ -7,12 +7,8 @@
   --background: rgb(15, 15, 15);
   --highlight: rgba(15, 15, 15, 0.5);
   --transparent-background: rgba(15, 15, 15, 0.9625);
-}
-
-* {
+}* {
   color-scheme: dark !important;
-}
-
-#logo {
+}#logo {
   filter: invert(1);
 }

@@ -11,9 +11,7 @@
   gap: 45px;
   opacity: 0;
   z-index: -1;
-}
-
-#searchbar {
+}#searchbar {
   margin-left: var(--sidebar-width);
   margin-top: 100px;
   width: 50%;
@@ -24,9 +22,7 @@
   background-color: var(--main);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   color: var(--second);
-}
-
-#searchbar-button {
+}#searchbar-button {
   position: fixed;
   top: 10px;
   right: 10px;
@@ -36,9 +32,7 @@
   background-color: var(--third);
   color: var(--second);
   cursor: pointer;
-}
-
-#image-names {
+}#image-names {
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -46,13 +40,9 @@
   margin-left: var(--sidebar-width);
   overflow: scroll;
   padding-right: 10px;
-}
-
-#image-names::-webkit-scrollbar {
+}#image-names::-webkit-scrollbar {
   width: 10px;
-}
-
-.searchbar-item {
+}.searchbar-item {
   display: flex;
   align-items: center;
   gap: 20px;
@@ -61,22 +51,16 @@
   width: 100%;
   background: var(--main);
   border: 1px solid var(--third);
-}
-
-#image-names img {
+}#image-names img {
   /* width: calc((100%/4) - (25px)); */
   width: 45%;
   height: auto;
-}
-
-.searchbarItemInfo {
+}.searchbarItemInfo {
   display: flex;
   flex-direction: column;
   gap: 5px;
   flex-wrap: wrap;
-}
-
-.searchbarDownloadButton {
+}.searchbarDownloadButton {
   background: transparent;
   border: 1px solid var(--fourth);
   padding: 10px 15px;
@@ -87,18 +71,12 @@
   text-align: center;
   color: var(--second);
   width: fit-content;
-}
-
-.searchbarDownloadButton:hover {
+}.searchbarDownloadButton:hover {
   background: var(--third) !important;
-}
-
-@media screen and (max-width: 1000px) {
+}@media screen and (max-width: 1000px) {
   .searchbarItemName {
     color: var(--second) !important;
-  }
-
-  .searchbarDownloadButton {
+  }  .searchbarDownloadButton {
     border: 0 !important;
     padding: 0 !important;
     text-decoration: underline !important;

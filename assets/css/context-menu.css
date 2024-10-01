@@ -4,9 +4,7 @@
     visibility: hidden !important;
     opacity: 0 !important;
   }
-}
-
-.context-menu {
+}.context-menu {
   position: absolute;
   top: 0;
   left: 0;
@@ -19,18 +17,14 @@
   z-index: 1000;
   display: none;
   flex-direction: column;
-}
-
-.context-menu a,
+}.context-menu a,
 .context-menu p {
   padding: 9px 15px;
   text-decoration: none;
   color: var(--second);
   cursor: var(--link-cursor);
   width: 100%;
-}
-
-.context-menu a:hover,
+}.context-menu a:hover,
 .context-menu p:hover {
   background-color: var(--third);
 }

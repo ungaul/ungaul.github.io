@@ -7,8 +7,6 @@
   --background: rgb(243, 243, 243);
   --highlight: rgba(243, 243, 243, 0.5);
   --transparent-background: rgba(243, 243, 243, 0.9625);
-}
-
-* {
+}* {
   color-scheme: light !important;
 }
