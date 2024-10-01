@@ -456,6 +456,7 @@ footer {
   width: 100%;
   gap: 25px;
   padding-bottom: 25px;
+  padding-top: 75px;
 }
 
 #footer-content {
