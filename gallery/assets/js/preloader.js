@@ -1,4 +1,6 @@
-// let preloaderDone = localStorage.getItem("preloaderDone");// if (preloaderDone === "Done") {
+// let preloaderDone = localStorage.getItem("preloaderDone");
+
+// if (preloaderDone === "Done") {
 //   var page = window.location.pathname.split("/").pop();
 //   if (page === "index.html") {
 //     load();
@@ -8,19 +10,31 @@
 //   }
 // } else {
 //   load();
-// }$(".colored-text").css("opacity", "100");
+// }
+
+$(".colored-text").css("opacity", "100");
 setTimeout(() => {
   $(".number")[0].style.setProperty("--num", "100");
-}, 1000);function load() {
+}, 1000);
+
+function load() {
   function preloaderSwipe() {
     setTimeout(() => {
       $("#preloader")[0].classList.add("preloader-swipe");
       // $("body")[0].classList.remove("locked-body");
     }, 1250);
-  }  setTimeout(() => {
+  }
+
+  setTimeout(() => {
     $(".colored-text").css("color", "var(--second)");
     preloaderSwipe();
-  }, 1500);  localStorage.setItem("preloaderDone", "Done");  // $.when($(".number").innerHTML === "f").then(() => {
+  }, 1500);
+
+  localStorage.setItem("preloaderDone", "Done");
+
+  // $.when($(".number").innerHTML === "f").then(() => {
   //   console.log("fini");
   // });
-}load();
+}
+
+load();

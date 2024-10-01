@@ -1,5 +1,7 @@
 document.title = "Gallery | ゴール";
-htmlFilePath = "gaul"$(document).ready(function () {
+htmlFilePath = "gaul"
+
+$(document).ready(function () {
   $("#name").text("ゴール");
   $("#username").text("gaul");
   $("#url").attr("data-url", "/links").text("links");

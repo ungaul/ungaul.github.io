@@ -1,20 +1,30 @@
 $(document).ready(function () {
   document.documentElement.style.setProperty("--sidebar-height", $("#sidebar")[0].offsetHeight + "px");
-  var phoneMenuClosed = true;  $("#mobileMenuToggle").click(function () {
+  var phoneMenuClosed = true;
+
+  $("#mobileMenuToggle").click(function () {
     $("#sidebar").toggleClass("toggled");
     phoneMenuClosed = !phoneMenuClosed;
     $("#mobileMenuToggle ion-icon").attr("name", phoneMenuClosed ? "pause-outline" : "close-outline");
-  });  $("#page").click(function () {
+  });
+
+  $("#page").click(function () {
     $("#sidebar").removeClass("toggled");
     $("#mobileMenuToggle ion-icon").attr("name", "pause-outline");
-  });  $(".overlay").on("transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd", function () {
+  });
+
+  $(".overlay").on("transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd", function () {
     if ($(this).hasClass("visible")) {
       $("body").addClass("locked-body");
     } else {
       $("body").removeClass("locked-body");
     }
   });
-});var clickCounter = 0;$(".sidebar-item:eq(2)").on("click", function () {
+});
+
+var clickCounter = 0;
+
+$(".sidebar-item:eq(2)").on("click", function () {
   clickCounter++;
   if (clickCounter === 7) {
     $("body").append("<button id='secret'>Secret</button>");
@@ -22,10 +32,14 @@ $(document).ready(function () {
       $("#secret").remove();
       clickCounter = 0;
     }, 3000);
-  }  if (clickCounter > 7) {
+  }
+
+  if (clickCounter > 7) {
     $("#secret").remove();
     clickCounter = 0;
-  }  $("#secret").on("click", async function () {
+  }
+
+  $("#secret").on("click", async function () {
     $("#secret-overlay").css({
       opacity: 100,
       zIndex: 3,
@@ -38,15 +52,23 @@ $(document).ready(function () {
           zIndex: -1,
         });
       }
-    });    $("#secretInput").on("input", function () {
+    });
+
+    $("#secretInput").on("input", function () {
       secretPathcode = $(this).val();
       imagePath = "/shashin/assets/img/" + secretPathcode + "min/";
-      originalImagePath = "/shashin/assets/img/" + secretPathcode + "original/";      if (secretPathcode.length > 6) {
+      originalImagePath = "/shashin/assets/img/" + secretPathcode + "original/";
+
+      if (secretPathcode.length > 6) {
         $("#secret-overlay").css({
           opacity: 0,
           zIndex: -1,
         });
-      }      $(".overlay, #image-names").toggleClass("secret-gallery");      randomizeAndPlaceImages();
+      }
+
+      $(".overlay, #image-names").toggleClass("secret-gallery");
+
+      randomizeAndPlaceImages();
       searchBarImages();
     });
   });

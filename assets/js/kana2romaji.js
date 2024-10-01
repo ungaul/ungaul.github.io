@@ -213,19 +213,33 @@ function kanaToRomaji(kana) {
   };
   const romajiArray = [...kana].map((char) => {
     return kanaToRomajiMap[char] || char;
-  });  const romajiResult = romajiArray.join("");  return romajiResult;
-}$(document).ready(function () {
+  });
+
+  const romajiResult = romajiArray.join("");
+
+  return romajiResult;
+}
+
+$(document).ready(function () {
   setTimeout(() => {
     // Sélectionner tous les éléments <p> et <h1> dans le document
-    const paragraphsAndHeadings = document.querySelectorAll("p, h1");    // Log pour chaque texte trouvé en tant qu'objet
+    const paragraphsAndHeadings = document.querySelectorAll("p, h1");
+
+    // Log pour chaque texte trouvé en tant qu'objet
     paragraphsAndHeadings.forEach((element, index) => {
-      const originalText = element.textContent.trim();      // Vérifier si le texte contient des caractères kana
+      const originalText = element.textContent.trim();
+
+      // Vérifier si le texte contient des caractères kana
       if (/[ぁ-んァ-ン]/.test(originalText)) {
-        const romajiText = kanaToRomaji(originalText);        // Logguer chaque texte trouvé en tant qu'objet
+        const romajiText = kanaToRomaji(originalText);
+
+        // Logguer chaque texte trouvé en tant qu'objet
         // console.log({
         //   originalText: originalText,
         //   romajiText: romajiText,
-        // });        // Remplacer le texte original par le texte en romaji
+        // });
+
+        // Remplacer le texte original par le texte en romaji
         element.textContent = romajiText;
       }
     });

@@ -1,7 +1,11 @@
 $(document).ready(function () {
   const repoOwner = "emlncvsr";
   const repoName = "emlncvsr.github.io";
-  const directoryPath = "scripts/list/"; // Path to the directory within the repository  const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${directoryPath}`;  // Function to escape HTML characters
+  const directoryPath = "scripts/list/"; // Path to the directory within the repository
+
+  const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${directoryPath}`;
+
+  // Function to escape HTML characters
   function escapeHtml(text) {
     const map = {
       "&": "&amp;",
@@ -13,16 +17,24 @@ $(document).ready(function () {
     return text.replace(/[&<>"']/g, function (m) {
       return map[m];
     });
-  }  $.ajax({
+  }
+
+  $.ajax({
     url: apiUrl,
     dataType: "json",
     success: function (data) {
-      const fileList = $("#file-list");      data.forEach(function (file) {
+      const fileList = $("#file-list");
+
+      data.forEach(function (file) {
         // Skip directories
         if (file.type !== "file") {
           return;
-        }        const fileName = file.name;
-        const fileUrl = file.download_url;        $.ajax({
+        }
+
+        const fileName = file.name;
+        const fileUrl = file.download_url;
+
+        $.ajax({
           url: fileUrl,
           dataType: "text",
           success: function (fileContent) {
@@ -33,8 +45,12 @@ $(document).ready(function () {
             fileHeader.append(toggleIcon).append(fileTitle);
             fileItem.append(fileHeader);
             const fileContentDiv = $("<div>", { class: "file-content" });
-            const pre = $("<pre>", { class: "code-block" });            // Escape HTML content
-            const escapedContent = escapeHtml(fileContent);            pre.text(escapedContent); // Use text to prevent HTML interpretation
+            const pre = $("<pre>", { class: "code-block" });
+
+            // Escape HTML content
+            const escapedContent = escapeHtml(fileContent);
+
+            pre.text(escapedContent); // Use text to prevent HTML interpretation
             fileContentDiv.append(pre);
             fileItem.append(fileContentDiv);
             fileHeader.click(function () {
@@ -58,6 +74,8 @@ $(document).ready(function () {
     error: function () {
       console.error("Failed to load file list");
     },
-  });  // Configure Highlight.js to ignore unescaped HTML (if necessary)
+  });
+
+  // Configure Highlight.js to ignore unescaped HTML (if necessary)
   hljs.configure({ ignoreUnescapedHTML: true });
 });
