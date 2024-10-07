@@ -56,6 +56,7 @@ function showImage(index) {
         .replace(imagePath + "/", "")
         .replace(".webp", "");
 
+    // Afficher l'image dans l'overlay
     overlayImage.attr("src", $clickedImage.attr("src"));
     imageTitle.text(fileName);
 
@@ -66,8 +67,9 @@ function showImage(index) {
     }
 
     overlay.addClass("visible");
-    const image = new Image();
 
+    // Charger l'image complète
+    const image = new Image();
     image.onload = function () {
         if (!downloadButton || !widthElement || !heightElement) {
             console.error(
@@ -76,17 +78,13 @@ function showImage(index) {
             );
             return;
         }
-        downloadButton.attr("href", originalImagePath + "/" + fileName + ".jpg");
-        widthElement.text(
-            "Width: " +
-            Math.round(this.naturalWidth * imageReductionFactor) +
-            " pixels"
-        );
-        heightElement.text(
-            "Height: " +
-            Math.round(this.naturalHeight * imageReductionFactor) +
-            " pixels"
-        );
+
+        // Remplacer 'min' par 'original' pour le lien de téléchargement
+        const originalImageUrl = $clickedImage.attr("src").replace("/min/", "/original/").replace(".webp", ".jpg");
+
+        downloadButton.attr("href", originalImageUrl);
+        widthElement.text("Width: " + Math.round(this.naturalWidth * imageReductionFactor) + " pixels");
+        heightElement.text("Height: " + Math.round(this.naturalHeight * imageReductionFactor) + " pixels");
     };
 
     image.src = $clickedImage.attr("src");

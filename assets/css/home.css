@@ -32,6 +32,11 @@
   background: var(--second);
 }
 
+.locked{
+  opacity: 0.2;
+  pointer-events: none;
+}
+
 .section {
   flex: 1;
   position: relative;

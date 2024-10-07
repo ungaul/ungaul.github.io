@@ -104,6 +104,13 @@ button:hover {
   overflow-y: hidden;
 }
 
+.locked{
+  background: var(--third) !important;
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed !important;
+}
+
 .visible {
   z-index: 2 !important;
   opacity: 100 !important;
