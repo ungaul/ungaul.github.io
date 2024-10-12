@@ -10,6 +10,7 @@
   --text-cursor: url(/assets/cursors/Text.cur), text;
   --font-family: caption, "VSCO Gothic", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-family-ja: "MS Mincho", "YU Mincho";
+  --gallery-height: 200px;
 }
 
 /* Imports */
@@ -349,6 +350,28 @@ header p {
   height: 300px;
 }
 
+.popup {
+  position: fixed;
+  background: var(--main);
+  border: 1px solid var(--third);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  z-index: 10;
+  width: 40vw;
+  top: 50%;
+  left: 50%;
+  margin-top: -125px;
+  margin-left: -250px;
+}
+
+.popup div {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
 .overlay {
   position: fixed;
   top: 0;
@@ -371,17 +394,20 @@ header p {
 }
 
 .overlay-image {
-  max-height: 80vh;
-  max-width: 80vw;
-  border: 1px solid var(--fourth);
+  height: 80vh;
+  max-width: 65vw;
   cursor: var(--default-cursor);
-  object-fit: scale-down;
+  object-fit: contain;
 }
 
 .image-info {
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
+
+.image-info p {
+  white-space: nowrap;
 }
 
 header {
@@ -549,6 +575,11 @@ footer a:hover {
   color: var(--second);
 }
 
+.image-width,
+.image-height {
+  opacity: 0;
+}
+
 @media screen and (min-width: 1200px) {
   :root {
     --page-padding: 75px;
@@ -588,14 +619,6 @@ footer a:hover {
 
   .overlay-content {
     flex-direction: column !important;
-  }
-
-  .overlay-image {
-    max-height: 70vh !important;
-  }
-
-  .overlay-image {
-    width: 60vw !important;
   }
 
   .image-info {
@@ -682,9 +705,10 @@ footer a:hover {
 
 #gallery {
   display: grid;
-  grid-gap: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  grid-auto-rows: 100px;
+  /* grid-gap: 10px; */
+  /* grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); */
+  grid-template-columns: repeat(auto-fit, minmax(auto, calc(var(--gallery-height) * 1)));
+  /* grid-auto-rows: 100px; */
   grid-auto-flow: dense;
 }
 

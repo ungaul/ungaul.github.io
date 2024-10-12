@@ -17,7 +17,7 @@ function openGallery(galleryId) {
 
 var htmlFilePath = "";
 let [imagePath, originalImagePath] = ["assets/img/" + htmlFilePath + "/min", "assets/img/" + htmlFilePath + "/original"];
-const imageReductionFactor = 3.03;
+const imageReductionFactor = 1;
 
 const imageDictionary = JSON.parse(localStorage.getItem("imageDictionary")) || {};
 
@@ -56,8 +56,14 @@ function showImage(index) {
         .replace(imagePath + "/", "")
         .replace(".webp", "");
 
-    // Afficher l'image dans l'overlay
-    overlayImage.attr("src", $clickedImage.attr("src"));
+    // Get the min version URL
+    const minImageUrl = $clickedImage.attr("src");
+
+    // Get the original image URL
+    const originalImageUrl = minImageUrl.replace("/min/", "/original/").replace(".webp", ".jpg");
+
+    // Display the min image first while the original is loading
+    overlayImage.attr("src", minImageUrl); // Display the already loaded min image
     imageTitle.text(fileName);
 
     if (fileName.includes("/") || fileName.length > 15) {
@@ -66,28 +72,30 @@ function showImage(index) {
         imageTitle.show();
     }
 
+    // Hide width and height elements initially
+    widthElement.css("opacity", 0);
+    heightElement.css("opacity", 0);
+
     overlay.addClass("visible");
 
-    // Charger l'image complète
-    const image = new Image();
-    image.onload = function () {
-        if (!downloadButton || !widthElement || !heightElement) {
-            console.error(
-                "Invalid download button or dimensions elements for index:",
-                index
-            );
-            return;
-        }
+    // Load the original image in the background
+    const originalImage = new Image();
+    originalImage.onload = function () {
+        // Once the original image is loaded, replace the min image with the original
+        overlayImage.attr("src", originalImageUrl);
 
-        // Remplacer 'min' par 'original' pour le lien de téléchargement
-        const originalImageUrl = $clickedImage.attr("src").replace("/min/", "/original/").replace(".webp", ".jpg");
-
+        // Update the download button and image dimensions
         downloadButton.attr("href", originalImageUrl);
         widthElement.text("Width: " + Math.round(this.naturalWidth * imageReductionFactor) + " pixels");
         heightElement.text("Height: " + Math.round(this.naturalHeight * imageReductionFactor) + " pixels");
+
+        // Set opacity to 1 to show the dimensions once the original image is loaded
+        widthElement.css("opacity", 1);
+        heightElement.css("opacity", 1);
     };
 
-    image.src = $clickedImage.attr("src");
+    // Start downloading the original image
+    originalImage.src = originalImageUrl;
 }
 
 function randomizeAndPlaceImages() {
@@ -97,68 +105,69 @@ function randomizeAndPlaceImages() {
     const directoryPath = 'gallery/assets/img/' + htmlFilePath + '/min';
 
     return new Promise((resolve, reject) => {
-        $.ajax({
-            url: `https://api.github.com/repos/${owner}/${repo}/contents/${directoryPath}?ref=${branch}`,
-            method: 'GET',
-            headers: {
-                'Accept': 'application/vnd.github.v3+json'
-            },
-            success: function (data) {
-                const imageLinks = data.filter(file => file.type === 'file' && file.name.endsWith('.webp'));
-                imageLinks.sort(() => 0.5 - Math.random());
+        gallery.fadeOut(500, function () { // Attendre que fadeOut soit terminé
+            $.ajax({
+                url: `https://api.github.com/repos/${owner}/${repo}/contents/${directoryPath}?ref=${branch}`,
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                success: function (data) {
+                    const imageLinks = data.filter(file => file.type === 'file' && file.name.endsWith('.webp'));
+                    imageLinks.sort(() => 0.5 - Math.random());
 
-                const totalImages = imageLinks.length;
+                    const totalImages = imageLinks.length;
 
-                gallery.empty();
+                    gallery.empty();
 
-                for (let j = 0; j < totalImages; j++) {
-                    const fileName = imageLinks[j].name;
+                    for (let j = 0; j < totalImages; j++) {
+                        const fileName = imageLinks[j].name;
 
-                    const imageElement = $("<img>").attr({
-                        src: imageLinks[j].download_url,
-                        class: "item",
-                        draggable: "false",
-                        id: fileName.replace(".webp", ""),
-                        alt: fileName.replace(".webp", ""),
-                        "data-index": j,
-                        rel: "preload",
-                        fetchpriority: "high",
-                    });
-
-                    const wrapperDiv = $("<div>").addClass("image-wrapper");
-
-                    (function (currentImage) {
-                        currentImage.on("load", function () {
-                            // Check if image is portrait or landscape
-                            if (this.naturalWidth > this.naturalHeight) {
-                                wrapperDiv.addClass('landscape');
-                            } else {
-                                wrapperDiv.addClass('portrait');
-                            }
-
-                            $(this).show();
-                            if (j === totalImages - 1) {
-                                searchBarImages();
-                            }
+                        const imageElement = $("<img>").attr({
+                            src: imageLinks[j].download_url,
+                            class: "item",
+                            draggable: "false",
+                            id: fileName.replace(".webp", ""),
+                            alt: fileName.replace(".webp", ""),
+                            "data-index": j,
+                            rel: "preload",
+                            fetchpriority: "high",
                         });
-                    })(imageElement);
 
-                    // Append the image element inside the wrapper div
-                    wrapperDiv.append(imageElement);
-                    gallery.append(wrapperDiv);
+                        const wrapperDiv = $("<div>").addClass("image-wrapper");
+
+                        (function (currentImage) {
+                            currentImage.on("load", function () {
+                                if (this.naturalWidth > this.naturalHeight) {
+                                    wrapperDiv.addClass('landscape');
+                                } else {
+                                    wrapperDiv.addClass('portrait');
+                                }
+
+                                $(this).show();
+                                if (j === totalImages - 1) {
+                                    searchBarImages();
+                                    // Maintenant que toutes les images sont placées, fais le fadeIn
+                                    gallery.fadeIn(200); // Le fadeIn commence ici une fois toutes les images placées
+                                }
+                            });
+                        })(imageElement);
+
+                        wrapperDiv.append(imageElement);
+                        gallery.append(wrapperDiv);
+                    }
+
+                    resolve();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    reject(new Error("Erreur lors de la récupération des fichiers : " + textStatus + " " + errorThrown));
                 }
-
-                resolve();
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                reject(new Error("Erreur lors de la récupération des fichiers : " + textStatus + " " + errorThrown));
-            }
+            });
         });
     }).catch((error) => {
         console.error(error);
     });
 }
-
 
 function searchBarImages() {
     const searchResults = $("#image-names");
@@ -211,7 +220,7 @@ function searchBarImages() {
             .addClass("searchbarDownloadButton")
             .text("Download")
             .attr("download", "")
-            .attr("href", imageSrc)
+            .attr("href", imageSrc.replace("/min/", "/original/").replace(".webp", ".jpg")) // Correction ici
             .appendTo(imageNameInfo);
     });
 }
