@@ -125,8 +125,17 @@ function randomizeAndPlaceImages() {
                         fetchpriority: "high",
                     });
 
+                    const wrapperDiv = $("<div>").addClass("image-wrapper");
+
                     (function (currentImage) {
                         currentImage.on("load", function () {
+                            // Check if image is portrait or landscape
+                            if (this.naturalWidth > this.naturalHeight) {
+                                wrapperDiv.addClass('landscape');
+                            } else {
+                                wrapperDiv.addClass('portrait');
+                            }
+
                             $(this).show();
                             if (j === totalImages - 1) {
                                 searchBarImages();
@@ -134,7 +143,9 @@ function randomizeAndPlaceImages() {
                         });
                     })(imageElement);
 
-                    gallery.append(imageElement);
+                    // Append the image element inside the wrapper div
+                    wrapperDiv.append(imageElement);
+                    gallery.append(wrapperDiv);
                 }
 
                 resolve();
@@ -147,6 +158,7 @@ function randomizeAndPlaceImages() {
         console.error(error);
     });
 }
+
 
 function searchBarImages() {
     const searchResults = $("#image-names");

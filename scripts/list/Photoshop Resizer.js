@@ -1,6 +1,3 @@
-// Chemin du dossier contenant les images
-var folderPath = "C:/Mega/Sites/geijutsu.site/vsco/assets/img/secret-original";
-
 // Dossier de destination pour enregistrer les images
 var destinationFolder = "C:/Users/kevan/Desktop/New folder";
 

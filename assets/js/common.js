@@ -1,9 +1,4 @@
 window.transitionToPage = function (href) {
-  // const currentDomain = window.location.hostname;
-  // const targetDomain = href && href.hostname;
-  // console.log(currentDomain, targetDomain);
-
-  // if (targetDomain && currentDomain !== targetDomain) {
   if (href.includes("https://")) {
     window.open(href, "_blank");
     return;
@@ -17,11 +12,15 @@ window.transitionToPage = function (href) {
   }
 };
 
-function storeGalleryIdAndNavigate(url, galleryId) {
-  localStorage.setItem('galleryId', galleryId);
-  transitionToPage(url);
-}
+// Fonction de gestion de la navigation arrière/avant
+window.addEventListener('popstate', function () {
+  document.body.style.opacity = 0;
+  setTimeout(function () {
+    document.body.style.opacity = 1;
+  }, 500);
+});
 
+// Attacher l'événement de clic pour les éléments avec data-url
 $("[data-url]").click(function (e) {
   const url = this.getAttribute("data-url");
   const galleryId = this.getAttribute("gallery-id");
@@ -31,6 +30,11 @@ $("[data-url]").click(function (e) {
     transitionToPage(url);
   }
 });
+
+function storeGalleryIdAndNavigate(url, galleryId) {
+  localStorage.setItem('galleryId', galleryId);
+  transitionToPage(url);
+}
 
 // if ("serviceWorker" in navigator) {
 //   $(window).on("load", function () {
