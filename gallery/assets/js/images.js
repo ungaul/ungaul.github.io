@@ -43,6 +43,8 @@ function processImage(fileName) {
     const imageKey = fileName.startsWith('/gallery/') ? fileName.replace('/gallery/', '') : fileName;
 }
 
+let imageLoadTimeout; // Variable globale pour stocker le timeout
+
 function showImage(index) {
     const $clickedImage = gallery.find('.item[data-index="' + index + '"]');
 
@@ -53,8 +55,9 @@ function showImage(index) {
 
     const fileName = $clickedImage
         .attr("src")
-        .replace(imagePath + "/", "")
-        .replace(".webp", "");
+        .split('/')
+        .pop() // Obtenir uniquement le nom du fichier
+        .replace(".webp", ""); // Retirer l'extension
 
     // Get the min version URL
     const minImageUrl = $clickedImage.attr("src");
@@ -64,13 +67,7 @@ function showImage(index) {
 
     // Display the min image first while the original is loading
     overlayImage.attr("src", minImageUrl); // Display the already loaded min image
-    imageTitle.text(fileName);
-
-    if (fileName.includes("/") || fileName.length > 15) {
-        imageTitle.hide();
-    } else {
-        imageTitle.show();
-    }
+    imageTitle.text(fileName); // Utilise seulement le nom du fichier pour le titre
 
     // Hide width and height elements initially
     widthElement.css("opacity", 0);
@@ -78,24 +75,29 @@ function showImage(index) {
 
     overlay.addClass("visible");
 
-    // Load the original image in the background
-    const originalImage = new Image();
-    originalImage.onload = function () {
-        // Once the original image is loaded, replace the min image with the original
-        overlayImage.attr("src", originalImageUrl);
+    // Annule le chargement précédent si l'utilisateur change d'image
+    clearTimeout(imageLoadTimeout);
 
-        // Update the download button and image dimensions
-        downloadButton.attr("href", originalImageUrl);
-        widthElement.text("Width: " + Math.round(this.naturalWidth * imageReductionFactor) + " pixels");
-        heightElement.text("Height: " + Math.round(this.naturalHeight * imageReductionFactor) + " pixels");
+    // Démarrer un nouveau chargement d'image avec un délai
+    imageLoadTimeout = setTimeout(() => {
+        const originalImage = new Image();
+        originalImage.onload = function () {
+            // Une fois l'image originale chargée, remplacer l'image min par l'originale
+            overlayImage.attr("src", originalImageUrl);
 
-        // Set opacity to 1 to show the dimensions once the original image is loaded
-        widthElement.css("opacity", 1);
-        heightElement.css("opacity", 1);
-    };
+            // Mettre à jour le bouton de téléchargement et les dimensions de l'image
+            downloadButton.attr("href", originalImageUrl);
+            widthElement.text("Width: " + Math.round(this.naturalWidth * imageReductionFactor) + " pixels");
+            heightElement.text("Height: " + Math.round(this.naturalHeight * imageReductionFactor) + " pixels");
 
-    // Start downloading the original image
-    originalImage.src = originalImageUrl;
+            // Afficher les dimensions une fois que l'image originale est chargée
+            widthElement.css("opacity", 1);
+            heightElement.css("opacity", 1);
+        };
+
+        // Commence à charger l'image originale
+        originalImage.src = originalImageUrl;
+    }, 3000); // Délai de 1 seconde avant de charger l'image originale
 }
 
 function randomizeAndPlaceImages() {
@@ -295,4 +297,16 @@ $("#viewButton").on("click", function () {
     });
 
     localStorage.setItem("imageDictionary", JSON.stringify(imageDictionary));
+});
+
+$(document).on('click', '.searchbar-item img', function () {
+    const clickedImageId = $(this).attr('id');
+    const $galleryImage = $('#gallery .item[id="' + clickedImageId + '"]');
+
+    if ($galleryImage.length > 0) {
+        const index = $galleryImage.data('index');
+        showImage(index);
+    } else {
+        console.error('Image not found in gallery for ID: ' + clickedImageId);
+    }
 });
