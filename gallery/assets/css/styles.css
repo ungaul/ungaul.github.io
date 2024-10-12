@@ -199,6 +199,10 @@ button:hover {
   width: 100%;
 }
 
+#sidebar section:nth-child(1) div{
+  padding-right: 25px;
+}
+
 #sidebar section:nth-child(1) * {
   color: var(--second);
   width: fit-content;
