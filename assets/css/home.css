@@ -104,6 +104,10 @@
   background: #f5d3c5;
 }
 
+.section[gallery-id="sus"]{
+  display: none;
+}
+
 @media screen and (max-width: 1080px) {
   body {
     background: #cddcdf !important;
