@@ -15,14 +15,12 @@ function loadContributionGraph(username) {
     fetch(`https://ghchart.rshah.org/${username}`)
         .then(response => response.text())
         .then(svgContent => {
-            // Injecter le SVG dans la page
             document.querySelector('.contribution-graph').innerHTML = svgContent;
 
-            // Appliquer du style au SVG (modifier la couleur de fond)
             const svgElement = document.querySelector('.contribution-graph svg');
             if (svgElement) {
-                svgElement.style.backgroundColor = '#f0f0f0'; // Changer la couleur de fond ici
-                svgElement.style.borderRadius = '8px'; // Arrondi optionnel
+                svgElement.style.backgroundColor = '#f0f0f0';
+                svgElement.style.borderRadius = '8px';
             }
         })
         .catch(error => {
@@ -31,11 +29,9 @@ function loadContributionGraph(username) {
         });
 }
 
-// Récupérer les informations du profil GitHub et les afficher
 fetch(`https://api.github.com/users/${username}`, authHeaders())
     .then(response => response.json())
     .then(userData => {
-        // Afficher la photo de profil, le nom, et d'autres informations
         accountInfoContainer.innerHTML = `
             <div class="profile-info">
                 <img src="${userData.avatar_url}" alt="Avatar" class="profile-avatar">
@@ -57,7 +53,6 @@ fetch(`https://api.github.com/users/${username}`, authHeaders())
         accountInfoContainer.innerHTML = `<p>Erreur lors de la récupération des informations utilisateur.</p>`;
     });
 
-// Récupérer les repositories et les fichiers
 fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
     .then(response => response.json())
     .then(data => {
@@ -65,7 +60,6 @@ fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
             const repoDiv = document.createElement('div');
             repoDiv.classList.add('repo');
 
-            // Initialiser le contenu du repository, avec des sections masquées par défaut
             const lastUpdated = new Date(repo.updated_at).toLocaleDateString();
             repoDiv.innerHTML = `
                 <h2>
@@ -116,14 +110,12 @@ fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
 
             reposContainer.appendChild(repoDiv);
 
-            // Récupérer les fichiers du repository
             fetch(repo.contents_url.replace('{+path}', ''), authHeaders())
                 .then(response => response.json())
                 .then(files => {
                     const filesList = document.getElementById(`files-${repo.name}`);
                     filesList.innerHTML = '';
 
-                    // Ajouter le tri des fichiers : dossiers en premier
                     files.sort((a, b) => {
                         if (a.type === 'dir' && b.type !== 'dir') {
                             return -1;
@@ -134,7 +126,6 @@ fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
                         }
                     });
 
-                    // Ajouter les fichiers triés au DOM
                     files.forEach(file => {
                         const li = document.createElement('li');
                         if (file.type === 'dir') {
@@ -142,25 +133,21 @@ fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
                                             <a href="#" class="folder-toggle">${file.name}</a>`;
                             filesList.appendChild(li);
 
-                            // Créer un ul pour les sous-fichiers
                             const subfileList = document.createElement('ul');
                             subfileList.classList.add('subfile-list');
                             subfileList.style.display = 'none';
-                            subfileList.style.paddingLeft = '20px'; // Indentation
+                            subfileList.style.paddingLeft = '20px';
 
                             li.after(subfileList);
 
-                            // Ajouter un événement de toggle sur le dossier
                             li.addEventListener('click', function (event) {
                                 event.preventDefault();
                                 const folderIcon = li.querySelector('ion-icon');
 
-                                // Toggle l'affichage des sous-fichiers
                                 if (subfileList.style.display === 'none') {
                                     subfileList.style.display = 'block';
                                     folderIcon.setAttribute('name', 'folder-open-outline');
 
-                                    // Charger les fichiers du sous-dossier récursivement si nécessaire
                                     if (subfileList.innerHTML === '') {
                                         fetch(file.url, authHeaders())
                                             .then(response => response.json())
@@ -178,7 +165,7 @@ fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
                         } else if (file.name.toLowerCase() === 'readme.md') {
                             li.innerHTML = `<ion-icon name="document-outline"></ion-icon> ${file.name}`;
                             li.addEventListener('click', function () {
-                                loadReadme(file.url); // Utiliser une fonction spécifique pour lire et afficher le README
+                                loadReadme(file.url);
                             });
                             filesList.appendChild(li);
                         } else {
@@ -194,7 +181,6 @@ fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
                     console.error('Erreur lors de la récupération des fichiers:', error);
                 });
 
-            // Ajouter l'événement de toggle sur le chevron
             repoDiv.querySelector('h2').addEventListener('click', function () {
                 const details = document.getElementById(`details-${repo.name}`);
                 const chevron = document.getElementById(`chevron-${repo.name}`);
@@ -208,7 +194,6 @@ fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
                 }
             });
 
-            // Toggle du menu déroulant "Code"
             const codeBtn = repoDiv.querySelector('.code-btn');
             const codeOptions = repoDiv.querySelector('.code-options');
 
@@ -340,7 +325,7 @@ function addFileToList(file, listElement, indent) {
         const subfileList = document.createElement('ul');
         subfileList.classList.add('subfile-list');
         subfileList.style.display = 'none';
-        subfileList.style.paddingLeft = '20px'; // Indentation supplémentaire pour les sous-dossiers
+        subfileList.style.paddingLeft = '20px';
 
         li.after(subfileList);
 
@@ -352,7 +337,6 @@ function addFileToList(file, listElement, indent) {
                 subfileList.style.display = 'block';
                 folderIcon.setAttribute('name', 'folder-open-outline');
 
-                // Charger les sous-dossiers et fichiers si nécessaire
                 if (subfileList.innerHTML === '') {
                     fetch(file.url, authHeaders())
                         .then(response => response.json())
