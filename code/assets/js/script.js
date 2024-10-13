@@ -2,15 +2,20 @@ const username = 'ungaul';
 const reposContainer = document.getElementById('repos');
 const fileContentContainer = document.getElementById('file-content');
 const accountInfoContainer = document.getElementById('account-info');
-const token = process.env.GITHUB_TOKEN;
+// const token = process.env.GITHUB_TOKEN;
+
+// function authHeaders() {
+//     return {
+//         headers: {
+//             'Authorization': `token ${token}`
+//         }
+//     };
+// }
 
 function authHeaders() {
-    return {
-        headers: {
-            'Authorization': `token ${token}`
-        }
-    };
+    return {};
 }
+
 function loadContributionGraph(username) {
     fetch(`https://ghchart.rshah.org/${username}`)
         .then(response => response.text())
