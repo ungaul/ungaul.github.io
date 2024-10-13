@@ -2,7 +2,7 @@ const username = 'ungaul';
 const reposContainer = document.getElementById('repos');
 const fileContentContainer = document.getElementById('file-content');
 const accountInfoContainer = document.getElementById('account-info');
-const token = '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';
+const token = process.env.GITHUB_TOKEN;
 
 function authHeaders() {
     return {
