@@ -67,6 +67,7 @@
   /* width: calc((100%/4) - (25px)); */
   width: 45%;
   height: auto;
+  cursor: var(--link-cursor);
 }
 
 .searchbarItemInfo {
@@ -74,6 +75,8 @@
   flex-direction: column;
   gap: 5px;
   flex-wrap: wrap;
+  width: 100%;
+  overflow: hidden;
 }
 
 .searchbarDownloadButton {
@@ -91,6 +94,10 @@
 
 .searchbarDownloadButton:hover {
   background: var(--third) !important;
+}
+
+.searchbarItemName{
+  word-wrap: break-word;
 }
 
 @media screen and (max-width: 1000px) {

@@ -42,13 +42,29 @@ $(document).ready(function () {
   });
 
   function showPopup(title, content) {
-    $('.popup').find('p').first().text(title);
-    $('.popup').find('p').last().text(content);
+    $('.popup').find('p.title').text(title);
+    $('.popup').find('p.content').text(content);
 
-    $('.popup').css("opacity","100");
+    $('#popup-container').css("opacity", "100");
+    $('#popup-container').css("zIndex", "2");
+    $('body').css("overflow", "hidden");
 
     $('.closePopup').on('click', function () {
-      $('.popup').css("opacity","0");
+      closePopup();
     });
+
+    $('#popup-container').on('click', function (e) {
+      if (!$(e.target).closest('.popup').length) {
+        closePopup();
+      }
+    });
+  }
+
+  function closePopup() {
+    $('#popup-container').css("opacity", "0");
+    $('#popup-container').css("zIndex", "-1");
+    $('body').css("overflow", "auto");
+
+    $('#popup-container').off('click');
   }
 });

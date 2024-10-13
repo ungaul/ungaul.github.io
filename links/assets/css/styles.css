@@ -11,7 +11,10 @@
 
 body {
   background: var(--main);
-  border: 1vw solid var(--main);
+  border: 0.5vw solid var(--main);
+  max-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 img {
@@ -26,7 +29,7 @@ img {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 50px;
+  padding: 45px;
   width: 100%;
   height: calc(100vh - 2 * 1vw);
   gap: 40px;
@@ -95,6 +98,12 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.link-container.locked {
+  pointer-events: none;
+  display: none;
 }
 
 .link p {
@@ -139,6 +148,11 @@ img {
   height: 50px;
 }
 
+.button.blocked {
+  pointer-events: none;
+  opacity: 0.3;
+}
+
 .button ion-icon {
   font-size: inherit;
 }
@@ -160,6 +174,11 @@ img {
   /* border-color: var(--second); */
 }
 
+* {
+  color: var(--second) !important;
+  border-color: var(--second) !important;
+}
+
 #main-button {
   left: 30px !important;
   top: 30px !important;
@@ -174,7 +193,7 @@ img {
   border-radius: 25%;
 }
 
-#main-button ion-icon{
+#main-button ion-icon {
   font-size: 25px;
 }
 
@@ -197,5 +216,10 @@ img {
 @media screen and (max-width: 700px) {
   body {
     border: 0 !important;
+  }
+
+  .link-container.locked {
+    display: flex;
+    opacity: 0.3;
   }
 }

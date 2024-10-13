@@ -149,8 +149,7 @@ function randomizeAndPlaceImages() {
                                 $(this).show();
                                 if (j === totalImages - 1) {
                                     searchBarImages();
-                                    // Maintenant que toutes les images sont placées, fais le fadeIn
-                                    gallery.fadeIn(200); // Le fadeIn commence ici une fois toutes les images placées
+                                    gallery.fadeIn(200);
                                 }
                             });
                         })(imageElement);
@@ -162,12 +161,65 @@ function randomizeAndPlaceImages() {
                     resolve();
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    reject(new Error("Erreur lors de la récupération des fichiers : " + textStatus + " " + errorThrown));
+                    if (jqXHR.status === 404) {
+                        console.error("GitHub content not found, loading local assets...");
+                        loadLocalImages(); // Fallback to local assets if 404 error occurs
+                    } else {
+                        reject(new Error("Erreur lors de la récupération des fichiers : " + textStatus + " " + errorThrown));
+                    }
                 }
             });
         });
     }).catch((error) => {
         console.error(error);
+    });
+}
+
+function loadLocalImages() {
+    const localDirectoryPath = 'assets/img/' + htmlFilePath + '/original/';
+
+    $.ajax({
+        url: localDirectoryPath,  // Le chemin vers votre dossier local
+        success: function (data) {
+            $(data).find("a:contains(.webp), a:contains(.jpg), a:contains(.jpeg), a:contains(.png)").each(function () {
+                const fileName = $(this).attr("href");
+
+                // Correction : retirer le chemin complet si présent dans fileName
+                const cleanedFileName = fileName.split('/').pop();  // Prend uniquement le nom du fichier
+
+                const imageElement = $("<img>").attr({
+                    src: localDirectoryPath + cleanedFileName,  // Concatène proprement le chemin et le nom du fichier
+                    class: "item",
+                    draggable: "false",
+                    id: cleanedFileName.replace(/\.(webp|jpg|jpeg|png)/, ""),  // ID basé sur le nom sans extension
+                    alt: cleanedFileName.replace(/\.(webp|jpg|jpeg|png)/, ""),  // Alt texte basé sur le nom sans extension
+                    "data-index": gallery.find(".item").length,
+                    rel: "preload",
+                    fetchpriority: "high",
+                });
+
+                const wrapperDiv = $("<div>").addClass("image-wrapper");
+
+                imageElement.on("load", function () {
+                    if (this.naturalWidth > this.naturalHeight) {
+                        wrapperDiv.addClass('landscape');
+                    } else {
+                        wrapperDiv.addClass('portrait');
+                    }
+
+                    $(this).show();
+                });
+
+                wrapperDiv.append(imageElement);
+                gallery.append(wrapperDiv);
+            });
+
+            searchBarImages();
+            gallery.fadeIn(200);  // Fade in après avoir placé les images
+        },
+        error: function () {
+            console.error("Erreur lors de la récupération des fichiers locaux.");
+        }
     });
 }
 
@@ -240,6 +292,18 @@ function loadGalleryScript(scriptId) {
         });
     });
 }
+
+overlayImage.on('click', function () {
+    if ($(window).width() < 1000) {
+        overlay.removeClass("visible");
+    }
+});
+
+imageTitle.on('click', function () {
+    if ($(window).width() < 1000) {
+        overlay.removeClass("visible");
+    }
+});
 
 overlay.click(function (e) {
     if ($(e.target).is("img, p, #prev-button, #next-button, .download-button")) {
