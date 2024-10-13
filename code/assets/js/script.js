@@ -49,8 +49,7 @@ fetch(`https://api.github.com/users/${username}`, authHeaders())
             </div>
             <div class="contribution-graph">
                 <iframe frameBorder="0" src="https://git-graph.vercel.app/embed/${username}?showColorLegend=true&showWeekdayLabels=false&showMonthLabels=true&showTotalCount=true&blockMargin=3&blockRadius=2&blockSize=9&fontSize=16&weekStart=4&year=2024"></iframe>
-            
-                </div>
+            </div>
         `;
     })
     .catch(error => {
@@ -219,7 +218,6 @@ fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
 function loadFile(fileUrl, fileName) {
     fetch(fileUrl, {
         headers: {
-            'Authorization': `token ${token}`,
             'Accept': 'application/vnd.github.v3.raw'
         }
     })
@@ -238,23 +236,6 @@ function loadFile(fileUrl, fileName) {
 
             $('#file-content').addClass('toggled');
             $('#repos').css('width', '50%');
-
-            if (window.innerWidth < 1000) {
-                document.body.style.overflow = 'hidden';
-                $('#background-overlay').show();
-            }
-
-            $('#close-btn').on('click', function () {
-                $('#file-content').removeClass('toggled');
-                $('#repos').css('width', '100%');
-
-                document.body.style.overflow = '';
-                $('#background-overlay').hide();
-
-                setTimeout(() => {
-                    $('#file-content').html('');
-                }, 500);
-            });
         })
         .catch(error => {
             $('#file-content').html('<p>Error downloading the file.</p>');
@@ -264,7 +245,6 @@ function loadFile(fileUrl, fileName) {
 function loadReadme(readmeUrl) {
     fetch(readmeUrl, {
         headers: {
-            'Authorization': `token ${token}`,
             'Accept': 'application/vnd.github.v3.raw'
         }
     })
