@@ -12,7 +12,6 @@ window.transitionToPage = function (href) {
   }
 };
 
-// Fonction de gestion de la navigation arrière/avant
 window.addEventListener('popstate', function () {
   document.body.style.opacity = 0;
   setTimeout(function () {
@@ -20,7 +19,12 @@ window.addEventListener('popstate', function () {
   }, 500);
 });
 
-// Attacher l'événement de clic pour les éléments avec data-url
+window.addEventListener('pageshow', function (event) {
+  if (event.persisted) {
+    document.body.style.opacity = 1;
+  }
+});
+
 $("[data-url]").click(function (e) {
   const url = this.getAttribute("data-url");
   const galleryId = this.getAttribute("gallery-id");
