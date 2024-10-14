@@ -6,7 +6,7 @@
   overflow: hidden;
 }
 
-#preloader {
+/* #preloader {
   background: var(--accent-color);
   clip-path: polygon(5% 0, 100% 0, 95% 100%, 0% 100%);
   width: 150vw;
@@ -14,11 +14,11 @@
 }
 
 .preloader-swipe {
-  /* transform: translate(150vw, 0); */
+  transform: translate(150vw, 0);
   opacity: 0;
   z-index: -1 !important;
   transition-duration: 0.5s;
-}
+} */
 
 #app {
   display: flex;
@@ -153,7 +153,7 @@
         100% 0%);
   }
 
-  #preloader {
+  /* #preloader {
     display: flex !important;
-  }
+  } */
 }
