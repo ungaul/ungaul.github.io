@@ -265,6 +265,7 @@ ion-icon[name="pause-outline"] {
   width: calc(100vw - var(--sidebar-width));
   background: var(--main);
   z-index: 0;
+  max-width: 100vw;
 }
 
 #profile {
@@ -608,8 +609,15 @@ footer a:hover {
 ::-webkit-scrollbar {
   background: var(--main);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--fourth);
+}
+
+@media screen and (max-width: 500px) {
+  #gallery {
+    grid-template-columns: repeat(auto-fit, minmax(auto, calc(150px * 1))) !important;
+  }
 }
 
 @media screen and (min-width: 1200px) {
@@ -639,6 +647,10 @@ footer a:hover {
   #sidebar section:nth-child(2) {
     display: flex !important;
     margin: 0 !important;
+  }
+
+  #page {
+    width: 100% !important;
   }
 
   #sidebar.toggled {

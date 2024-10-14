@@ -1,4 +1,4 @@
-const lazyLoadingEnabled = true;
+const lazyLoadingEnabled = window.innerWidth >= 500;;
 
 document.addEventListener('DOMContentLoaded', function () {
     const galleryId = localStorage.getItem('galleryId');
