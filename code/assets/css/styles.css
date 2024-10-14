@@ -421,6 +421,10 @@ pre[class*=language-] {
   display: none;
 }
 
+#main-button {
+  background: var(--background);
+}
+
 /* width */
 ::-webkit-scrollbar {
   width: var(--scrollbar-width);

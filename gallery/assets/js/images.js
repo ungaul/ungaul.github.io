@@ -1,5 +1,17 @@
+const lazyLoadingEnabled = true;
+
 document.addEventListener('DOMContentLoaded', function () {
     const galleryId = localStorage.getItem('galleryId');
+    if (galleryId) {
+        openGallery(galleryId);
+        localStorage.removeItem('galleryId');
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const galleryId = urlParams.get('gallery') || localStorage.getItem('galleryId');
+
     if (galleryId) {
         openGallery(galleryId);
         localStorage.removeItem('galleryId');
@@ -43,7 +55,7 @@ function processImage(fileName) {
     const imageKey = fileName.startsWith('/gallery/') ? fileName.replace('/gallery/', '') : fileName;
 }
 
-let imageLoadTimeout; // Variable globale pour stocker le timeout
+let imageLoadTimeout;
 
 function showImage(index) {
     const $clickedImage = gallery.find('.item[data-index="' + index + '"]');
@@ -53,173 +65,176 @@ function showImage(index) {
         return;
     }
 
-    const fileName = $clickedImage
-        .attr("src")
-        .split('/')
-        .pop() // Obtenir uniquement le nom du fichier
-        .replace(".webp", ""); // Retirer l'extension
+    const fileName = decodeURIComponent($clickedImage.attr("src").split('/').pop().replace(".webp", ""));
 
-    // Get the min version URL
     const minImageUrl = $clickedImage.attr("src");
-
-    // Get the original image URL
     const originalImageUrl = minImageUrl.replace("/min/", "/original/").replace(".webp", ".jpg");
 
-    // Display the min image first while the original is loading
-    overlayImage.attr("src", minImageUrl); // Display the already loaded min image
-    imageTitle.text(fileName); // Utilise seulement le nom du fichier pour le titre
+    overlayImage.attr("src", minImageUrl);
+    imageTitle.text(decodeURIComponent(fileName));
 
-    // Hide width and height elements initially
-    widthElement.css("opacity", 0);
-    heightElement.css("opacity", 0);
+    widthElement.text("Width: Loading...");
+    heightElement.text("Height: Loading...");
 
     overlay.addClass("visible");
 
-    // Annule le chargement précédent si l'utilisateur change d'image
     clearTimeout(imageLoadTimeout);
 
-    // Démarrer un nouveau chargement d'image avec un délai
     imageLoadTimeout = setTimeout(() => {
         const originalImage = new Image();
         originalImage.onload = function () {
-            // Une fois l'image originale chargée, remplacer l'image min par l'originale
             overlayImage.attr("src", originalImageUrl);
-
-            // Mettre à jour le bouton de téléchargement et les dimensions de l'image
             downloadButton.attr("href", originalImageUrl);
             widthElement.text("Width: " + Math.round(this.naturalWidth * imageReductionFactor) + " pixels");
             heightElement.text("Height: " + Math.round(this.naturalHeight * imageReductionFactor) + " pixels");
-
-            // Afficher les dimensions une fois que l'image originale est chargée
-            widthElement.css("opacity", 1);
-            heightElement.css("opacity", 1);
         };
 
-        // Commence à charger l'image originale
         originalImage.src = originalImageUrl;
-    }, 3000); // Délai de 1 seconde avant de charger l'image originale
+    }, 3000);
 }
 
 function randomizeAndPlaceImages() {
+    gallery.fadeOut(500, function () {
+        loadLocalImages()
+            .then(() => {
+                gallery.fadeIn(200);
+            })
+            .catch(() => {
+                loadFromGithub()
+                    .then(() => {
+                        gallery.fadeIn(200);
+                    })
+                    .catch((error) => {
+                        console.error("Erreur lors du chargement des images depuis GitHub :", error);
+                    });
+            });
+    });
+}
+
+function loadLocalImages() {
+    const localDirectoryPath = 'assets/img/' + htmlFilePath + '/min/';
+
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: localDirectoryPath,
+            success: function (data) {
+                let foundImages = false;
+                $(data).find("a:contains(.webp), a:contains(.jpg), a:contains(.jpeg), a:contains(.png)").each(function () {
+                    const fileName = $(this).attr("href");
+                    const cleanedFileName = fileName.split('/').pop();
+
+                    const imageElement = $("<img>").attr({
+                        src: lazyLoadingEnabled ? "" : localDirectoryPath + cleanedFileName,
+                        "data-src": lazyLoadingEnabled ? localDirectoryPath + cleanedFileName : "",
+                        class: "item lazy-image",
+                        draggable: "false",
+                        id: cleanedFileName.replace(/\.(webp|jpg|jpeg|png)/, ""),
+                        alt: cleanedFileName.replace(/\.(webp|jpg|jpeg|png)/, ""),
+                        "data-index": gallery.find(".item").length,
+                        rel: "preload",
+                        fetchpriority: "high"
+                    }).css("opacity", 0);
+
+                    const wrapperDiv = $("<div>").addClass("image-wrapper");
+
+                    imageElement.on("load", function () {
+                        if (this.naturalWidth > this.naturalHeight) {
+                            wrapperDiv.addClass('landscape');
+                        } else {
+                            wrapperDiv.addClass('portrait');
+                        }
+
+                        $(this).animate({ opacity: 1 }, 1000);
+                    });
+
+                    if (!lazyLoadingEnabled) {
+                        imageElement.attr("src", localDirectoryPath + cleanedFileName);
+                    }
+
+                    wrapperDiv.append(imageElement);
+                    gallery.append(wrapperDiv);
+                    foundImages = true;
+                });
+
+                if (foundImages) {
+                    if (lazyLoadingEnabled) {
+                        lazyLoadImages();
+                    }
+                    searchBarImages();
+                    resolve();
+                } else {
+                    reject();
+                }
+            },
+            error: function () {
+                reject();
+            }
+        });
+    });
+}
+
+function loadFromGithub() {
     const owner = 'ungaul';
     const repo = 'ungaul.github.io';
     const branch = 'main';
     const directoryPath = 'gallery/assets/img/' + htmlFilePath + '/min';
 
     return new Promise((resolve, reject) => {
-        gallery.fadeOut(500, function () { // Attendre que fadeOut soit terminé
-            $.ajax({
-                url: `https://api.github.com/repos/${owner}/${repo}/contents/${directoryPath}?ref=${branch}`,
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/vnd.github.v3+json'
-                },
-                success: function (data) {
-                    const imageLinks = data.filter(file => file.type === 'file' && file.name.endsWith('.webp'));
-                    imageLinks.sort(() => 0.5 - Math.random());
+        $.ajax({
+            url: `https://api.github.com/repos/${owner}/${repo}/contents/${directoryPath}?ref=${branch}`,
+            method: 'GET',
+            headers: {
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            success: function (data) {
+                const imageLinks = data.filter(file => file.type === 'file' && file.name.endsWith('.webp'));
+                imageLinks.sort(() => 0.5 - Math.random());
 
-                    const totalImages = imageLinks.length;
+                const totalImages = imageLinks.length;
+                gallery.empty();
 
-                    gallery.empty();
+                for (let j = 0; j < totalImages; j++) {
+                    const fileName = imageLinks[j].name;
 
-                    for (let j = 0; j < totalImages; j++) {
-                        const fileName = imageLinks[j].name;
+                    const imageElement = $("<img>").attr({
+                        src: lazyLoadingEnabled ? "" : imageLinks[j].download_url,
+                        "data-src": lazyLoadingEnabled ? imageLinks[j].download_url : "",
+                        class: "item lazy-image",
+                        draggable: "false",
+                        id: fileName.replace(".webp", ""),
+                        alt: fileName.replace(".webp", ""),
+                        "data-index": j
+                    }).css("opacity", 0);
 
-                        const imageElement = $("<img>").attr({
-                            src: imageLinks[j].download_url,
-                            class: "item",
-                            draggable: "false",
-                            id: fileName.replace(".webp", ""),
-                            alt: fileName.replace(".webp", ""),
-                            "data-index": j,
-                            rel: "preload",
-                            fetchpriority: "high",
-                        });
+                    const wrapperDiv = $("<div>").addClass("image-wrapper");
 
-                        const wrapperDiv = $("<div>").addClass("image-wrapper");
+                    imageElement.on("load", function () {
+                        if (this.naturalWidth > this.naturalHeight) {
+                            wrapperDiv.addClass('landscape');
+                        } else {
+                            wrapperDiv.addClass('portrait');
+                        }
+                        $(this).animate({ opacity: 1 }, 1000);
+                    });
 
-                        (function (currentImage) {
-                            currentImage.on("load", function () {
-                                if (this.naturalWidth > this.naturalHeight) {
-                                    wrapperDiv.addClass('landscape');
-                                } else {
-                                    wrapperDiv.addClass('portrait');
-                                }
-
-                                $(this).show();
-                                if (j === totalImages - 1) {
-                                    searchBarImages();
-                                    gallery.fadeIn(200);
-                                }
-                            });
-                        })(imageElement);
-
-                        wrapperDiv.append(imageElement);
-                        gallery.append(wrapperDiv);
+                    if (!lazyLoadingEnabled) {
+                        imageElement.attr("src", imageLinks[j].download_url);
                     }
 
-                    resolve();
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    if (jqXHR.status === 404) {
-                        console.error("GitHub content not found, loading local assets...");
-                        loadLocalImages(); // Fallback to local assets if 404 error occurs
-                    } else {
-                        reject(new Error("Erreur lors de la récupération des fichiers : " + textStatus + " " + errorThrown));
-                    }
+                    wrapperDiv.append(imageElement);
+                    gallery.append(wrapperDiv);
                 }
-            });
+
+                if (lazyLoadingEnabled) {
+                    lazyLoadImages();
+                }
+                searchBarImages();
+                resolve();
+            },
+            error: function () {
+                reject();
+            }
         });
-    }).catch((error) => {
-        console.error(error);
-    });
-}
-
-function loadLocalImages() {
-    const localDirectoryPath = 'assets/img/' + htmlFilePath + '/original/';
-
-    $.ajax({
-        url: localDirectoryPath,  // Le chemin vers votre dossier local
-        success: function (data) {
-            $(data).find("a:contains(.webp), a:contains(.jpg), a:contains(.jpeg), a:contains(.png)").each(function () {
-                const fileName = $(this).attr("href");
-
-                // Correction : retirer le chemin complet si présent dans fileName
-                const cleanedFileName = fileName.split('/').pop();  // Prend uniquement le nom du fichier
-
-                const imageElement = $("<img>").attr({
-                    src: localDirectoryPath + cleanedFileName,  // Concatène proprement le chemin et le nom du fichier
-                    class: "item",
-                    draggable: "false",
-                    id: cleanedFileName.replace(/\.(webp|jpg|jpeg|png)/, ""),  // ID basé sur le nom sans extension
-                    alt: cleanedFileName.replace(/\.(webp|jpg|jpeg|png)/, ""),  // Alt texte basé sur le nom sans extension
-                    "data-index": gallery.find(".item").length,
-                    rel: "preload",
-                    fetchpriority: "high",
-                });
-
-                const wrapperDiv = $("<div>").addClass("image-wrapper");
-
-                imageElement.on("load", function () {
-                    if (this.naturalWidth > this.naturalHeight) {
-                        wrapperDiv.addClass('landscape');
-                    } else {
-                        wrapperDiv.addClass('portrait');
-                    }
-
-                    $(this).show();
-                });
-
-                wrapperDiv.append(imageElement);
-                gallery.append(wrapperDiv);
-            });
-
-            searchBarImages();
-            gallery.fadeIn(200);  // Fade in après avoir placé les images
-        },
-        error: function () {
-            console.error("Erreur lors de la récupération des fichiers locaux.");
-        }
     });
 }
 
@@ -228,14 +243,19 @@ function searchBarImages() {
     searchResults.empty();
 
     $(".item").each(function () {
-        const imageSrc = $(this).attr("src");
-        let imageFileName = imageSrc.split('/').pop().replace(".webp", "");
+        const imageSrc = $(this).attr("src") || $(this).attr("data-src");
+        if (!imageSrc) {
+            return;
+        }
+
+        let imageFileName = decodeURIComponent(imageSrc.split('/').pop().replace(".webp", ""));
 
         const imageElement = $("<img>").attr({
             src: imageSrc,
             id: imageFileName,
             draggable: "false",
         });
+
         const imageNameParagraph = $("<div>")
             .addClass("searchbar-item")
             .append(imageElement);
@@ -250,23 +270,19 @@ function searchBarImages() {
             .text(imageFileName)
             .appendTo(imageNameInfo);
 
-        $("<p>")
-            .addClass("searchbarItemWidth")
-            .text(
-                "Width: " +
-                Math.round(this.naturalWidth * imageReductionFactor) +
-                " pixels"
-            )
-            .appendTo(imageNameInfo);
+        const img = new Image();
+        img.src = imageSrc;
+        img.onload = function () {
+            $("<p>")
+                .addClass("searchbarItemWidth")
+                .text("Width: " + Math.round(this.naturalWidth) + " pixels")
+                .appendTo(imageNameInfo);
 
-        $("<p>")
-            .addClass("searchbarItemHeight")
-            .text(
-                "Height: " +
-                Math.round(this.naturalHeight * imageReductionFactor) +
-                " pixels"
-            )
-            .appendTo(imageNameInfo);
+            $("<p>")
+                .addClass("searchbarItemHeight")
+                .text("Height: " + Math.round(this.naturalHeight) + " pixels")
+                .appendTo(imageNameInfo);
+        };
 
         $("<p>").addClass("searchbarItemSize").appendTo(imageNameInfo);
 
@@ -274,7 +290,7 @@ function searchBarImages() {
             .addClass("searchbarDownloadButton")
             .text("Download")
             .attr("download", "")
-            .attr("href", imageSrc.replace("/min/", "/original/").replace(".webp", ".jpg")) // Correction ici
+            .attr("href", imageSrc.replace("/min/", "/original/").replace(".webp", ".jpg"))
             .appendTo(imageNameInfo);
     });
 }
@@ -309,7 +325,9 @@ overlay.click(function (e) {
     if ($(e.target).is("img, p, #prev-button, #next-button, .download-button")) {
         return;
     }
+
     overlay.removeClass("visible");
+    overlayImage.attr("src", "");
 });
 
 gallery.on("click", ".item", function () {
@@ -374,3 +392,26 @@ $(document).on('click', '.searchbar-item img', function () {
         console.error('Image not found in gallery for ID: ' + clickedImageId);
     }
 });
+
+function lazyLoadImages() {
+    const lazyImages = document.querySelectorAll(".lazy-image");
+
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const image = entry.target;
+                image.src = image.getAttribute("data-src");
+
+                image.onload = () => {
+                    $(image).animate({ opacity: 1 }, 1000);
+                };
+
+                observer.unobserve(image);
+            }
+        });
+    });
+
+    lazyImages.forEach(image => {
+        imageObserver.observe(image);
+    });
+}

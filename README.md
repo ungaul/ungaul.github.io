@@ -2,7 +2,7 @@
 
 This repo is my website source, as well as storage for archived/abandonned projects.
 
-## 写真 (/shashin) - ゴール (/gaul) 📷
+## 写真 (/photos) - ゴール (/gaul) 📷
 
 - 写真: Explore beautiful and unique images.
 - Gaul: A nationalist-related clone.

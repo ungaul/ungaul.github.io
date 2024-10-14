@@ -14,7 +14,7 @@
 }
 
 #searchbar {
-  margin-left: var(--sidebar-width);
+  /* margin-left: var(--sidebar-width); */
   margin-top: 100px;
   width: 50%;
   height: 45px;
@@ -39,13 +39,14 @@
 }
 
 #image-names {
+  /* margin-left: var(--sidebar-width); */
   display: flex;
   flex-direction: column;
   gap: 15px;
   width: 49%;
-  margin-left: var(--sidebar-width);
-  overflow: scroll;
+  overflow-y: scroll;
   padding-right: 10px;
+  max-height: 70vh;
 }
 
 #image-names::-webkit-scrollbar {

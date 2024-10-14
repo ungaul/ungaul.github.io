@@ -52,7 +52,7 @@ $(window).on("load", function () {
     if (src) {
       $(this).attr(
         "alt",
-        src.replace("/shashin/assets/img/min/", "").replace(".jpg", "")
+        src.replace("/gallery/assets/img/min/", "").replace(".jpg", "")
       );
     }
   });

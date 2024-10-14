@@ -262,7 +262,7 @@ ion-icon[name="pause-outline"] {
   flex-direction: column;
   align-items: center;
   padding: 0 var(--page-padding);
-  width: 100%;
+  width: calc(100vw - var(--sidebar-width));
   background: var(--main);
   z-index: 0;
 }
@@ -595,14 +595,21 @@ footer a:hover {
   color: var(--second);
 }
 
-.image-width,
+/* .image-width,
 .image-height {
   opacity: 0;
-}
+} */
 
 .searchbarItemWidth,
 .searchbarItemHeight {
   display: none !important;
+}
+
+::-webkit-scrollbar {
+  background: var(--main);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--fourth);
 }
 
 @media screen and (min-width: 1200px) {

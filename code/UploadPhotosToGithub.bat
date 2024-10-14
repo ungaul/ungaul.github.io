@@ -2,8 +2,8 @@
 
 :: Source and destination directories
 set SOURCE_DIR=C:\MEGA\Images\Photos
-set DEST_ORIGINAL=C:\Users\gaulerie\Documents\Github\ungaul.github.io\gallery\assets\img\shashin\original
-set DEST_MIN=C:\Users\gaulerie\Documents\Github\ungaul.github.io\gallery\assets\img\shashin\min
+set DEST_ORIGINAL=C:\Users\gaulerie\Documents\Github\ungaul.github.io\gallery\assets\img\gallery\original
+set DEST_MIN=C:\Users\gaulerie\Documents\Github\ungaul.github.io\gallery\assets\img\gallery\min
 
 :: Clear destination folders
 echo Clearing the original folder...
