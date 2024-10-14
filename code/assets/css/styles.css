@@ -232,7 +232,7 @@ h2 a {
   cursor: var(--link-cursor);
 }
 
-.file-list a {
+.file-list p {
   color: var(--second);
   text-decoration: none;
   font-size: 14px;
@@ -448,9 +448,5 @@ pre[class*=language-] {
   pre,
   code {
     height: 89vh;
-  }
-
-  pre {
-    width: 98.5%;
   }
 }
