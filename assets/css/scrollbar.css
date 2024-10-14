@@ -2,7 +2,7 @@
 ::-webkit-scrollbar {
   width: var(--scrollbar-width);
   height: 8px;
-  background: var(--thourth);
+  background: var(--fourth);
 }
 
 /* Handle */
