@@ -298,6 +298,7 @@ code {
   /* margin-top: 265vh !important; */
   overflow: scroll;
   max-height: 87vh;
+  width: 100%;
 }
 
 .code-btn {

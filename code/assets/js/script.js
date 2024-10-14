@@ -2,18 +2,9 @@ const username = 'ungaul';
 const reposContainer = document.getElementById('repos');
 const fileContentContainer = document.getElementById('file-content');
 const accountInfoContainer = document.getElementById('account-info');
-// const token = process.env.GITHUB_TOKEN;
 
-// function authHeaders() {
-//     return {
-//         headers: {
-//             'Authorization': `token ${token}`
-//         }
-//     };
-// }
-
-function authHeaders() {
-    return {};
+function apiCall(path) {
+    return fetch(`/api/github?path=${path}`).then(response => response.json());
 }
 
 function loadContributionGraph(username) {
@@ -34,8 +25,8 @@ function loadContributionGraph(username) {
         });
 }
 
-fetch(`https://api.github.com/users/${username}`, authHeaders())
-    .then(response => response.json())
+// Appel de l'API pour récupérer les infos utilisateur
+apiCall(`/users/${username}`)
     .then(userData => {
         accountInfoContainer.innerHTML = `
             <div class="profile-info">
@@ -57,8 +48,7 @@ fetch(`https://api.github.com/users/${username}`, authHeaders())
         accountInfoContainer.innerHTML = `<p>Erreur lors de la récupération des informations utilisateur.</p>`;
     });
 
-fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
-    .then(response => response.json())
+apiCall(`/users/${username}/repos`)
     .then(data => {
         data.forEach(repo => {
             const repoDiv = document.createElement('div');
@@ -114,8 +104,7 @@ fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
 
             reposContainer.appendChild(repoDiv);
 
-            fetch(repo.contents_url.replace('{+path}', ''), authHeaders())
-                .then(response => response.json())
+            apiCall(`/repos/${username}/${repo.name}/contents`)
                 .then(files => {
                     const filesList = document.getElementById(`files-${repo.name}`);
                     filesList.innerHTML = '';
@@ -153,8 +142,7 @@ fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
                                     folderIcon.setAttribute('name', 'folder-open-outline');
 
                                     if (subfileList.innerHTML === '') {
-                                        fetch(file.url, authHeaders())
-                                            .then(response => response.json())
+                                        apiCall(file.url)
                                             .then(subfiles => {
                                                 subfiles.forEach(subfile => {
                                                     addFileToList(subfile, subfileList, 20);
@@ -166,12 +154,6 @@ fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
                                     folderIcon.setAttribute('name', 'folder-outline');
                                 }
                             });
-                        } else if (file.name.toLowerCase() === 'readme.md') {
-                            li.innerHTML = `<ion-icon name="document-outline"></ion-icon> ${file.name}`;
-                            li.addEventListener('click', function () {
-                                loadReadme(file.url);
-                            });
-                            filesList.appendChild(li);
                         } else {
                             li.innerHTML = `<ion-icon name="document-outline"></ion-icon> ${file.name}`;
                             li.addEventListener('click', function () {
@@ -184,30 +166,6 @@ fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
                 .catch(error => {
                     console.error('Erreur lors de la récupération des fichiers:', error);
                 });
-
-            repoDiv.querySelector('h2').addEventListener('click', function () {
-                const details = document.getElementById(`details-${repo.name}`);
-                const chevron = document.getElementById(`chevron-${repo.name}`);
-
-                if (details.style.display === 'none') {
-                    details.style.display = 'block';
-                    chevron.setAttribute('name', 'chevron-down-outline');
-                } else {
-                    details.style.display = 'none';
-                    chevron.setAttribute('name', 'chevron-forward-outline');
-                }
-            });
-
-            const codeBtn = repoDiv.querySelector('.code-btn');
-            const codeOptions = repoDiv.querySelector('.code-options');
-
-            codeBtn.addEventListener('click', function () {
-                if (codeOptions.style.display === 'none') {
-                    codeOptions.style.display = 'flex';
-                } else {
-                    codeOptions.style.display = 'none';
-                }
-            });
         });
     })
     .catch(error => {
@@ -216,12 +174,7 @@ fetch(`https://api.github.com/users/${username}/repos`, authHeaders())
     });
 
 function loadFile(fileUrl, fileName) {
-    fetch(fileUrl, {
-        headers: {
-            'Accept': 'application/vnd.github.v3.raw'
-        }
-    })
-        .then(response => response.text())
+    apiCall(fileUrl)
         .then(data => {
             let fileExtension = fileName.split('.').pop();
             let language = Prism.languages[fileExtension] ? fileExtension : 'markup';
@@ -236,6 +189,23 @@ function loadFile(fileUrl, fileName) {
 
             $('#file-content').addClass('toggled');
             $('#repos').css('width', '50%');
+
+            if (window.innerWidth < 1000) {
+                document.body.style.overflow = 'hidden';
+                $('#background-overlay').show();
+            }
+
+            $('#close-btn').on('click', function () {
+                $('#file-content').removeClass('toggled');
+                $('#repos').css('width', '100%');
+
+                document.body.style.overflow = '';
+                $('#background-overlay').hide();
+
+                setTimeout(() => {
+                    $('#file-content').html('');
+                }, 500);
+            });
         })
         .catch(error => {
             $('#file-content').html('<p>Error downloading the file.</p>');
@@ -243,12 +213,7 @@ function loadFile(fileUrl, fileName) {
 }
 
 function loadReadme(readmeUrl) {
-    fetch(readmeUrl, {
-        headers: {
-            'Accept': 'application/vnd.github.v3.raw'
-        }
-    })
-        .then(response => response.text())
+    apiCall(readmeUrl)
         .then(markdown => {
             var converter = new showdown.Converter();
             var htmlContent = converter.makeHtml(markdown);
