@@ -1,8 +1,0 @@
-.grid div{
-    user-select: all !important;
-}
-
-span, input, .taskCard-subLabel{
-  user-select: none !important;
-  display: none;
-}
