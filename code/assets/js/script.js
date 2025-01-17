@@ -3,6 +3,7 @@ const reposContainer = document.getElementById('repos');
 const fileContentContainer = document.getElementById('file-content');
 const accountInfoContainer = document.getElementById('account-info');
 
+// Load contribution graph from a third-party service
 function loadContributionGraph(username) {
     fetch(`https://ghchart.rshah.org/${username}`)
         .then(response => response.text())
@@ -21,7 +22,8 @@ function loadContributionGraph(username) {
         });
 }
 
-fetch(`/.netlify/functions/fetchUser`)
+// Fetch and display user information
+fetch(`https://api.github.com/users/${username}`)
     .then(response => response.json())
     .then(userData => {
         accountInfoContainer.innerHTML = `
@@ -34,33 +36,33 @@ fetch(`/.netlify/functions/fetchUser`)
                     <p>Public Repos: ${userData.public_repos}</p>
                 </div>
             </div>
-            <div class="contribution-graph">
-                <iframe frameBorder="0" src="https://git-graph.vercel.app/embed/${username}?showColorLegend=true&showWeekdayLabels=false&showMonthLabels=true&showTotalCount=true&blockMargin=3&blockRadius=2&blockSize=9&fontSize=16&weekStart=4&year=2024"></iframe>
-            </div>
+            <div class="contribution-graph"></div>
         `;
+        loadContributionGraph(username);
     })
     .catch(() => {
         accountInfoContainer.innerHTML = `<p>Error retrieving user information.</p>`;
     });
 
+// Function to add files and directories to the list
 function addFileToList(file, listElement, indent, repo, currentPath = '') {
     const li = document.createElement('li');
     li.style.paddingLeft = `${indent}px`;
     const filePath = currentPath ? `${currentPath}/${file.name}` : file.name;
     if (file.type === 'dir') {
-        li.innerHTML = `<ion-icon name="folder-outline"></ion-icon> 
-                            <p class="folder-toggle" style="display: inline-block; cursor: pointer;">${file.name}</p>`;
+        li.innerHTML = `
+            <ion-icon name="folder-outline"></ion-icon> 
+            <p class="folder-toggle" style="display: inline-block; cursor: pointer;">${file.name}</p>
+        `;
         listElement.appendChild(li);
 
         const subfileList = document.createElement('ul');
         subfileList.classList.add('subfile-list');
         subfileList.style.display = 'none';
-        subfileList.style.paddingLeft = '20px';
 
         li.after(subfileList);
 
-        li.addEventListener('click', function (event) {
-            event.preventDefault();
+        li.addEventListener('click', function () {
             const folderIcon = li.querySelector('ion-icon');
 
             if (subfileList.style.display === 'none') {
@@ -68,7 +70,7 @@ function addFileToList(file, listElement, indent, repo, currentPath = '') {
                 folderIcon.setAttribute('name', 'folder-open-outline');
 
                 if (subfileList.innerHTML === '') {
-                    const fullUrl = `/.netlify/functions/fetchRepoContents?repo=${repo.name}&path=${encodeURIComponent(filePath)}`;
+                    const fullUrl = `https://api.github.com/repos/${username}/${repo.name}/contents/${encodeURIComponent(filePath)}`;
                     fetch(fullUrl)
                         .then(response => response.json())
                         .then(subfiles => {
@@ -86,18 +88,21 @@ function addFileToList(file, listElement, indent, repo, currentPath = '') {
             }
         });
     } else if (file.type === 'file') {
-        li.innerHTML = `<ion-icon name="document-outline"></ion-icon> 
-                            <p class="file-link" style="display: inline-block; cursor: pointer;">${file.name}</p>`;
+        li.innerHTML = `
+            <ion-icon name="document-outline"></ion-icon> 
+            <p class="file-link" style="display: inline-block; cursor: pointer;">${file.name}</p>
+        `;
         listElement.appendChild(li);
 
         li.addEventListener('click', function () {
-            loadFile(file.url, file.name);
+            loadFile(file.download_url, file.name);
         });
     } else {
         console.error('Unknown file type:', file);
     }
 }
 
+// Process a single repository
 function processRepo(repo) {
     const repoDiv = document.createElement('div');
     repoDiv.classList.add('repo');
@@ -127,7 +132,7 @@ function processRepo(repo) {
 
     reposContainer.appendChild(repoDiv);
 
-    fetch(`/.netlify/functions/fetchRepoContents?repo=${repo.name}`)
+    fetch(`https://api.github.com/repos/${username}/${repo.name}/contents/`)
         .then(response => response.json())
         .then(files => {
             const filesList = document.getElementById(`files-${repo.name}`);
@@ -145,7 +150,8 @@ function processRepo(repo) {
     });
 }
 
-fetch(`/.netlify/functions/fetchRepos`)
+// Fetch and display repositories
+fetch(`https://api.github.com/users/${username}/repos`)
     .then(response => response.json())
     .then(repos => {
         repos.forEach(repo => processRepo(repo));
@@ -154,57 +160,36 @@ fetch(`/.netlify/functions/fetchRepos`)
         reposContainer.innerHTML = `<p>Error retrieving repositories.</p>`;
     });
 
+// Load file content and display it
 function loadFile(fileUrl, fileName) {
-    fetch(fileUrl, { headers: { 'Accept': 'application/vnd.github.v3.raw' } })
+    fetch(fileUrl)
         .then(response => response.text())
         .then(data => {
             const fileExtension = fileName.split('.').pop();
             const language = Prism.languages[fileExtension] ? fileExtension : 'markup';
 
-            $('#file-content').html(`
+            fileContentContainer.innerHTML = `
                 <div id="file-content-top">
                     <h3>${fileName}</h3>
                     <button id="close-btn"><ion-icon name="close-outline"></ion-icon></button>
                 </div>
                 <pre><code class="language-${language}">${Prism.highlight(data, Prism.languages[language], language)}</code></pre>
-            `).addClass('toggled');
-            $('#repos').css('width', '50%');
+            `;
+            fileContentContainer.classList.add('toggled');
+            reposContainer.style.width = '50%';
 
             if (window.innerWidth < 1000) {
                 document.body.style.overflow = 'hidden';
-                $('#background-overlay').show();
+                document.getElementById('background-overlay').style.display = 'block';
             }
 
-            $('#close-btn').on('click', function () {
-                $('#file-content').removeClass('toggled');
-                $('#repos').css('width', '100%');
+            document.getElementById('close-btn').addEventListener('click', function () {
+                fileContentContainer.classList.remove('toggled');
+                reposContainer.style.width = '100%';
                 document.body.style.overflow = '';
-                $('#background-overlay').hide();
+                document.getElementById('background-overlay').style.display = 'none';
 
-                setTimeout(() => { $('#file-content').html(''); }, 500);
+                setTimeout(() => { fileContentContainer.innerHTML = ''; }, 500);
             });
         });
 }
-
-window.addEventListener('resize', function () {
-    if ($('#file-content').hasClass('toggled') && window.innerWidth < 1000) {
-        document.body.style.overflow = 'hidden';
-        $('#background-overlay').show();
-    } else {
-        document.body.style.overflow = '';
-        $('#background-overlay').hide();
-    }
-});
-
-$(document).ready(function () {
-    $(document).on('click', '.copy-icon', function () {
-        const textToCopy = $(this).data('text');
-        const icon = $(this);
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            icon.attr('name', 'checkmark-outline').css('color', 'green');
-            setTimeout(() => {
-                icon.attr('name', 'copy-outline').css('color', '');
-            }, 2000);
-        });
-    });
-});
