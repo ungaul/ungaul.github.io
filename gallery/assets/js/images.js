@@ -1,4 +1,5 @@
-const lazyLoadingEnabled = window.innerWidth >= 500;;
+const lazyLoadingEnabled = window.innerWidth >= 500;
+const maxImages = 200;
 
 document.addEventListener('DOMContentLoaded', function () {
     const galleryId = localStorage.getItem('galleryId');
@@ -119,7 +120,10 @@ function loadLocalImages() {
             url: localDirectoryPath,
             success: function (data) {
                 let foundImages = false;
+                let count = 0;
                 $(data).find("a:contains(.webp), a:contains(.jpg), a:contains(.jpeg), a:contains(.png)").each(function () {
+                    if (count >= maxImages) return false; // stop if maxImages reached
+
                     const fileName = $(this).attr("href");
                     const cleanedFileName = fileName.split('/').pop();
 
@@ -154,6 +158,7 @@ function loadLocalImages() {
                     wrapperDiv.append(imageElement);
                     gallery.append(wrapperDiv);
                     foundImages = true;
+                    count++;
                 });
 
                 if (foundImages) {
@@ -414,4 +419,85 @@ function lazyLoadImages() {
     lazyImages.forEach(image => {
         imageObserver.observe(image);
     });
+}
+
+$(document).ready(function () {
+    $.get('/env', function (data) {
+        var env = {};
+        data.split('\n').forEach(function (line) {
+            line = line.trim();
+            if (line && line[0] !== '#') {
+                var parts = line.split('=');
+                if (parts.length >= 2) {
+                    var key = parts[0].trim();
+                    var value = parts.slice(1).join('=').trim();
+                    env[key] = value;
+                }
+            }
+        });
+        if (env.CUSTOM_FOLDER === "true") {
+            $("#gallery-list").append('<div id="custom" class="gallery-item">CUSTOM</div>');
+            $("#custom").on('click', async function () {
+                try {
+                    const directoryHandle = await window.showDirectoryPicker();
+                    loadCustomGallery(directoryHandle);
+                } catch (error) {
+                    console.error("Error selecting folder:", error);
+                }
+            });
+        }
+        $("#gallery-list div").on("click", function () {
+            $("#selector").fadeOut(300);
+        });
+    }).fail(function () {
+        console.error("Unable to load the /env file");
+    });
+});
+
+async function getImagesFromDirectory(directoryHandle) {
+    let files = [];
+    for await (const entry of directoryHandle.values()) {
+        if (entry.kind === 'file' && entry.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+            files.push(entry);
+        } else if (entry.kind === 'directory') {
+            const subFiles = await getImagesFromDirectory(entry);
+            files = files.concat(subFiles);
+        }
+    }
+    return files;
+}
+
+async function loadCustomGallery(directoryHandle) {
+    $("#gallery").empty();
+    try {
+        const imageHandles = await getImagesFromDirectory(directoryHandle);
+        imageHandles.sort(() => 0.5 - Math.random());
+        for (let i = 0; i < imageHandles.length; i++) {
+            const fileHandle = imageHandles[i];
+            const file = await fileHandle.getFile();
+            const blobURL = URL.createObjectURL(file);
+            const imageElement = $("<img>").attr({
+                src: blobURL,
+                class: "item",
+                draggable: "false",
+                id: file.name.replace(/\.(jpg|jpeg|png|gif|webp)$/i, ""),
+                alt: file.name,
+                "data-index": i
+            }).css("opacity", 0);
+            const wrapperDiv = $("<div>").addClass("image-wrapper");
+            imageElement.on("load", function () {
+                if (this.naturalWidth > this.naturalHeight) {
+                    wrapperDiv.addClass('landscape');
+                } else {
+                    wrapperDiv.addClass('portrait');
+                }
+                $(this).animate({ opacity: 1 }, 1000);
+            });
+            wrapperDiv.append(imageElement);
+            $("#gallery").append(wrapperDiv);
+        }
+        searchBarImages();
+    } catch (err) {
+        console.error("Error loading custom gallery:", err);
+    }
 }

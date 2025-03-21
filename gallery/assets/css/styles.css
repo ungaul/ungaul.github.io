@@ -155,10 +155,6 @@ button:hover {
   gap: 10px;
 }
 
-#gallery-list div[id="sus"] {
-  display: none;
-}
-
 .gallery-item {
   border: 1px solid var(--third);
   padding: 20px;

@@ -99,9 +99,3 @@ $(document).ready(function () {
 
   tempElement.remove();
 });
-
-$(document).ready(function () {
-  if (window.location.href.startsWith("https://192.168.0.102:5500/")) {
-    $('.section[gallery-id="sus"]').css('display', 'flex');
-  }
-});
