@@ -1,11 +1,25 @@
 {
-    "name": "my-project",
-    "version": "1.0.0",
-    "main": "index.js",
-    "dependencies": {
-      "node-fetch": "^2.6.7"
-    },
-    "scripts": {
-      "start": "node server.js"
-    }
+  "name": "ungaul.github.io",
+  "version": "1.0.0",
+  "description": "This repo is my website source, as well as storage for archived/abandonned projects.",
+  "main": "code.js",
+  "scripts": {
+    "start": "node code.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ungaul/ungaul.github.io.git"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ungaul/ungaul.github.io/issues"
+  },
+  "homepage": "https://github.com/ungaul/ungaul.github.io#readme"
 }

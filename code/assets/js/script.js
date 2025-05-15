@@ -1,16 +1,16 @@
 const username = 'ungaul';
+const backend = 'https://TON-BACKEND.onrender.com';
+
 const reposContainer = document.getElementById('repos');
 const fileContentContainer = document.getElementById('file-content');
 const accountInfoContainer = document.getElementById('account-info');
 
-// Load contribution graph from a third-party service
 function loadContributionGraph(username) {
     fetch(`https://ghchart.rshah.org/${username}`)
-        .then(response => response.text())
+        .then(r => r.text())
         .then(svgContent => {
             const graphElement = document.querySelector('.contribution-graph');
             graphElement.innerHTML = svgContent;
-
             const svgElement = graphElement.querySelector('svg');
             if (svgElement) {
                 svgElement.style.backgroundColor = '#f0f0f0';
@@ -22,9 +22,8 @@ function loadContributionGraph(username) {
         });
 }
 
-// Fetch and display user information
-fetch(`https://api.github.com/users/${username}`)
-    .then(response => response.json())
+fetch(`${backend}/user`)
+    .then(r => r.json())
     .then(userData => {
         accountInfoContainer.innerHTML = `
             <div class="profile-info">
@@ -44,14 +43,14 @@ fetch(`https://api.github.com/users/${username}`)
         accountInfoContainer.innerHTML = `<p>Error retrieving user information.</p>`;
     });
 
-// Function to add files and directories to the list
 function addFileToList(file, listElement, indent, repo, currentPath = '') {
     const li = document.createElement('li');
     li.style.paddingLeft = `${indent}px`;
     const filePath = currentPath ? `${currentPath}/${file.name}` : file.name;
+
     if (file.type === 'dir') {
         li.innerHTML = `
-            <ion-icon name="folder-outline"></ion-icon> 
+            <ion-icon name="folder-outline"></ion-icon>
             <p class="folder-toggle" style="display: inline-block; cursor: pointer;">${file.name}</p>
         `;
         listElement.appendChild(li);
@@ -59,28 +58,24 @@ function addFileToList(file, listElement, indent, repo, currentPath = '') {
         const subfileList = document.createElement('ul');
         subfileList.classList.add('subfile-list');
         subfileList.style.display = 'none';
-
         li.after(subfileList);
 
         li.addEventListener('click', function () {
             const folderIcon = li.querySelector('ion-icon');
-
             if (subfileList.style.display === 'none') {
                 subfileList.style.display = 'block';
                 folderIcon.setAttribute('name', 'folder-open-outline');
 
                 if (subfileList.innerHTML === '') {
-                    const fullUrl = `https://api.github.com/repos/${username}/${repo.name}/contents/${encodeURIComponent(filePath)}`;
-                    fetch(fullUrl)
-                        .then(response => response.json())
+                    const url = `${backend}/contents?repo=${repo.name}&path=${encodeURIComponent(filePath)}`;
+                    fetch(url)
+                        .then(r => r.json())
                         .then(subfiles => {
                             subfiles.forEach(subfile => {
                                 addFileToList(subfile, subfileList, indent + 20, repo, filePath);
                             });
                         })
-                        .catch(error => {
-                            console.error('Error fetching subfiles:', error);
-                        });
+                        .catch(console.error);
                 }
             } else {
                 subfileList.style.display = 'none';
@@ -89,7 +84,7 @@ function addFileToList(file, listElement, indent, repo, currentPath = '') {
         });
     } else if (file.type === 'file') {
         li.innerHTML = `
-            <ion-icon name="document-outline"></ion-icon> 
+            <ion-icon name="document-outline"></ion-icon>
             <p class="file-link" style="display: inline-block; cursor: pointer;">${file.name}</p>
         `;
         listElement.appendChild(li);
@@ -97,12 +92,9 @@ function addFileToList(file, listElement, indent, repo, currentPath = '') {
         li.addEventListener('click', function () {
             loadFile(file.download_url, file.name);
         });
-    } else {
-        console.error('Unknown file type:', file);
     }
 }
 
-// Process a single repository
 function processRepo(repo) {
     const repoDiv = document.createElement('div');
     repoDiv.classList.add('repo');
@@ -132,12 +124,11 @@ function processRepo(repo) {
 
     reposContainer.appendChild(repoDiv);
 
-    fetch(`https://api.github.com/repos/${username}/${repo.name}/contents/`)
-        .then(response => response.json())
+    fetch(`${backend}/contents?repo=${repo.name}`)
+        .then(r => r.json())
         .then(files => {
             const filesList = document.getElementById(`files-${repo.name}`);
             filesList.innerHTML = '';
-
             files.sort((a, b) => a.type === 'dir' ? -1 : b.type === 'dir' ? 1 : a.name.localeCompare(b.name));
             files.forEach(file => addFileToList(file, filesList, 20, repo, ''));
         });
@@ -150,9 +141,8 @@ function processRepo(repo) {
     });
 }
 
-// Fetch and display repositories
-fetch(`https://api.github.com/users/${username}/repos`)
-    .then(response => response.json())
+fetch(`${backend}/repos`)
+    .then(r => r.json())
     .then(repos => {
         repos.forEach(repo => processRepo(repo));
     })
@@ -160,9 +150,8 @@ fetch(`https://api.github.com/users/${username}/repos`)
         reposContainer.innerHTML = `<p>Error retrieving repositories.</p>`;
     });
 
-// Load file content and display it
 function loadFile(fileUrl, fileName) {
-    fetch(fileUrl)
+    fetch(`${backend}/file?url=${encodeURIComponent(fileUrl)}&name=${encodeURIComponent(fileName)}`)
         .then(response => response.text())
         .then(data => {
             const fileExtension = fileName.split('.').pop();
