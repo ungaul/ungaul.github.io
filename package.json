@@ -2,9 +2,8 @@
   "name": "ungaul.github.io",
   "version": "1.0.0",
   "description": "This repo is my website source, as well as storage for archived/abandonned projects.",
-  "main": "code.js",
   "scripts": {
-    "start": "node code.js"
+    "start": "node backend/code.js"
   },
   "repository": {
     "type": "git",
