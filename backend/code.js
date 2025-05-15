@@ -2,7 +2,9 @@ const express = require('express');
 const axios = require('axios');
 require('dotenv').config();
 
+const cors = require('cors');
 const app = express();
+app.use(cors());
 const PORT = process.env.PORT || 3000;
 const GITHUB_USERNAME = 'ungaul';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
