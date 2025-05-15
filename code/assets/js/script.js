@@ -1,5 +1,5 @@
 const username = 'ungaul';
-const backend = 'https://TON-BACKEND.onrender.com';
+const backend = 'https://ungaul-github-io.onrender.com';
 
 const reposContainer = document.getElementById('repos');
 const fileContentContainer = document.getElementById('file-content');
